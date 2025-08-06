@@ -1,0 +1,13 @@
+// src/sections/Header.jsx
+import React from 'react';
+import Navbar from './Navbar';
+
+const Header = () => {
+  return (
+    <header>
+      <Navbar />
+    </header>
+  );
+};
+
+export default Header;
