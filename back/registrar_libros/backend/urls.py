@@ -1,9 +1,10 @@
+# proyecto/urls.py
 from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('libros.urls')),
-    path('', include('libros.urls')),
-    path('api/', include('libros.urls')),
+    path("admin/", admin.site.urls),
+
+    # Toda la API cuelga de /api/
+    path("api/", include("libros.urls")),
 ]

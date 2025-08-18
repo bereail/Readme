@@ -1,43 +1,19 @@
-// app/(tabs)/_layout.tsx
-// Define el Tab Navigator (las pestañas inferiores). Cada archivo dentro de (tabs)/ es una pantalla tab.
+/* app/_layout.tsx
+Tu componente inicial
 
-import React from 'react';
-import { Platform } from 'react-native';
-import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+Es el que Expo arranca siempre:
+👉 app/_layout.tsx
 
-export default function TabLayout() {
+Ese archivo define el esqueleto global (ejemplo: navbar fijo arriba).
+
+Todo lo que esté en app/ pasa a través de él.*/
+import { Stack } from 'expo-router';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+export default function RootLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: Platform.select({
-          ios: { position: 'absolute' },
-          default: {},
-        }),
-        tabBarActiveTintColor: '#a020f0',
-        tabBarInactiveTintColor: '#fff',
-        tabBarStyle: { backgroundColor: '#111' },
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Inicio',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explorar',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="search" size={size} color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+    <SafeAreaProvider>
+      <Stack screenOptions={{ headerTitle: 'ReadMe', headerShadowVisible: false }} />
+    </SafeAreaProvider>
   );
 }
