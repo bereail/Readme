@@ -22,13 +22,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-+g^jki(ehcot9-*5q+56@-rxnro$^hp9^1$%5hfr6cpzigsch6'
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# settings.py
+
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
-
-# Application definition
+# 👉 poné acá los hosts desde donde vas a entrar
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.100.21']  # reemplazá por la IP LAN real de tu PC
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -37,9 +36,38 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'libros',       # ✅ Así Django encuentra la app
     'corsheaders',
+    'libros',
 ]
+
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+
+    # 👇 CORS SIEMPRE ANTES de CommonMiddleware
+    'corsheaders.middleware.CorsMiddleware',
+
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+# CORS (para desarrollo)
+CORS_ALLOW_ALL_ORIGINS = True
+# o más estricto:
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:19006',  # Expo web
+#     'http://localhost:3000',
+# ]
+
+# (Opcional) ajustá zona horaria
+LANGUAGE_CODE = 'es-ar'
+TIME_ZONE = 'America/Argentina/Cordoba'
+USE_I18N = True
+USE_TZ = True
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
