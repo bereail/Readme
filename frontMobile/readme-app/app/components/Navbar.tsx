@@ -6,7 +6,7 @@ export default function Navbar() {
   return (
     <SafeAreaView edges={['top']} style={{ backgroundColor: 'white' }}>
       <View style={styles.bar}>
-        <Text style={styles.title}>ReadMe</Text>
+        <Text style={styles.title}>Readmsasae</Text>
       </View>
     </SafeAreaView>
   );

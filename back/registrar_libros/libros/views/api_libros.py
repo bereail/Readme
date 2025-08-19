@@ -1,6 +1,7 @@
 import requests
 from django.http import JsonResponse
-from ..models import Libro, Usuario, Lectura
+from ..models import Libro, Lectura, Anotacion, Bookmark
+from django.contrib.auth import get_user_model
 
 def api_home(request):
     return JsonResponse({"mensaje": "Bienvenido a la API de Registro de Libros 📚"})
@@ -27,37 +28,6 @@ def buscar_libro_por_isbn(request, isbn):
         return JsonResponse({"error": "Libro no encontrado"}, status=404)
 
 
-# 🔠 Buscar libros por título desde OpenLibrary
-def buscar_libros_por_titulo(request, titulo):
-    url = f"https://openlibrary.org/search.json?title={titulo}"
-    response = requests.get(url)
-
-    if response.status_code != 200:
-        return JsonResponse({"error": "No se pudo acceder a OpenLibrary"}, status=500)
-
-    data = response.json()
-    resultados = []
-
-    for libro in data.get("docs", [])[:15]:
-        isbn_list = libro.get("isbn", [])
-        isbn = isbn_list[0] if isbn_list else None
-
-        # Intentar con ISBN primero
-        if isbn:
-            portada = f"https://covers.openlibrary.org/b/isbn/{isbn}-L.jpg"
-        else:
-            cover_id = libro.get("cover_i")
-            portada = f"https://covers.openlibrary.org/b/id/{cover_id}-L.jpg" if cover_id else None
-
-        resultados.append({
-            "titulo": libro.get("title", "Sin título"),
-            "autor": libro.get("author_name", ["Desconocido"])[0],
-            "anio": libro.get("first_publish_year"),
-            "isbn": isbn,
-            "portada": portada
-        })
-
-    return JsonResponse(resultados, safe=False)
 
 
 # 💾 Buscar libro por ISBN y guardarlo en la base de datos

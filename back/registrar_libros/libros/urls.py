@@ -2,14 +2,19 @@ from django.urls import path
 from libros.views import (
     api_home,
     libros_home_openlibrary_random,
-    buscar_libros_por_titulo
-
+    buscar_libros_por_titulo,
+    guardar_lectura,
+    listar_lecturas,
 )
+
 urlpatterns = [
     path('', api_home),
-    path('libros-inicio', libros_home_openlibrary_random), #OK
-    path('buscar-libros', buscar_libros_por_titulo),
+    path('libros-inicio', libros_home_openlibrary_random),   # 8 random
+    path('buscar-libros', buscar_libros_por_titulo),         # ?titulo=...
+    path('lecturas', listar_lecturas),                       # GET
+    path('lecturas/guardar', guardar_lectura),               # POST
 ]
+
 
 
 #    path('libros-inicio', libros_home_openlibrary_random),

@@ -3,84 +3,59 @@ http://127.0.0.1:8000//buscar-libros?titulo=harry
 */
 // components/BuscarLibros.tsx
 // app/components/BuscarLibros.tsx
+// app/components/BuscarLibros.tsx
 import React, { useState } from "react";
-import {
-  View,
-  TextInput,
-  Button,
-  FlatList,
-  ActivityIndicator,
-  Text,
-  StyleSheet,
-} from "react-native";
+import { View, TextInput, TouchableOpacity, Text, FlatList } from "react-native";
 import BookCard from "./BookCard";
-import { buscarLibros, type Libro } from "../../src/api/libros";
+import type { Book } from "../utils/favorites";
+import { normalizeToBook } from "../utils/normalize";
 
 export default function BuscarLibros() {
   const [q, setQ] = useState("");
-  const [data, setData] = useState<Libro[]>([]);
+  const [results, setResults] = useState<Book[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
 
-  const onSearch = async () => {
-    const term = q.trim();
-    if (!term) return;
+  const buscar = async () => {
+    if (!q.trim()) { setMsg("Ingresá un título"); return; }
+    setMsg(null);
     setLoading(true);
-    setError(null);
     try {
-      const res = await buscarLibros(term);
-      setData(res);
+      const url = `http://127.0.0.1:8000/api/buscar-libros?titulo=${encodeURIComponent(q)}`;
+      const r = await fetch(url);
+      const data = await r.json();
+      const mapped = (Array.isArray(data) ? data : [])
+        .map((it, i) => normalizeToBook(it, i))
+        .filter(Boolean) as Book[];
+      setResults(mapped);
+      if (!mapped.length) setMsg("Sin resultados");
     } catch (e) {
-      setError("No se pudo buscar. Revisá la conexión o CORS.");
+      setMsg("No se pudo buscar");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View style={styles.wrap}>
+    <View style={{ padding: 12, gap: 8 }}>
       <TextInput
+        placeholder="Buscar libro por título"
         value={q}
         onChangeText={setQ}
-        placeholder="Buscar libro por título"
-        style={styles.input}
-        returnKeyType="search"
-        onSubmitEditing={onSearch}
+        style={{ backgroundColor: "#fff", borderRadius: 8, padding: 12, borderWidth: 1, borderColor: "#ddd" }}
       />
-      <Button title={loading ? "Buscando..." : "Buscar"} onPress={onSearch} disabled={loading} />
+      <TouchableOpacity onPress={buscar} style={{ backgroundColor: "#1e90ff", borderRadius: 8, padding: 12 }}>
+        <Text style={{ color: "#fff", textAlign: "center", fontWeight: "700" }}>{loading ? "Buscando..." : "BUSCAR"}</Text>
+      </TouchableOpacity>
 
-      {loading && <ActivityIndicator style={{ marginTop: 12 }} />}
-      {error && <Text style={{ color: "red", marginTop: 8 }}>{error}</Text>}
+      {msg ? <Text style={{ textAlign: "center", marginTop: 8 }}>{msg}</Text> : null}
 
       <FlatList
-        style={{ marginTop: 12 }}
-        data={data}
-        keyExtractor={(item, idx) => item.id || String(idx)}
-        renderItem={({ item }) => (
-          <BookCard
-            title={item.title}
-            author={item.author}
-            year={item.year}
-            coverUrl={item.coverUrl}
-            onPress={() => {}}
-          />
-        )}
-        ListEmptyComponent={
-          !loading ? <Text style={{ textAlign: "center" }}>Sin resultados</Text> : null
-        }
+        data={results}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <BookCard book={item} expanded />}
+        ListEmptyComponent={null}
       />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrap: { gap: 10, padding: 16 },
-  input: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: "#ddd",
-  },
-});

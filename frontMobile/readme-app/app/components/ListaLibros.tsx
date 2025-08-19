@@ -4,74 +4,48 @@
 // components/ListaLibros.tsx
 // components/ListaLibros.tsx
 // app/components/ListaLibros.tsx
-import React, { useEffect, useState, useCallback } from "react";
-import {
-  View,
-  FlatList,
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  LayoutAnimation,
-  UIManager,
-  Platform,
-} from "react-native";
+// app/components/ListaLibros.tsx
+import React, { useEffect, useState } from "react";
+import { View, FlatList, Text } from "react-native";
 import BookCard from "./BookCard";
-import { getLibrosInicio, type Libro } from "../../src/api/libros";
+import type { Book } from "../utils/favorites";
+import { normalizeToBook } from "../utils/normalize";
 
-// Habilitar animaciones en Android (una sola vez)
-if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+const API = "http://127.0.0.1:8000/api/libros-inicio"; // si usás dispositivo físico: http://TU_IP_LAN:8000
 
 export default function ListaLibros() {
-  const [data, setData] = useState<Libro[]>([]);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const res = await getLibrosInicio();
-        setData(res);
-      } catch {
-        setErr("No se pudieron cargar los libros de inicio.");
+        setLoading(true);
+        const r = await fetch(API);
+        const data = await r.json();
+        if (!Array.isArray(data)) throw new Error("Respuesta inesperada");
+        const mapped = data.map((it, i) => normalizeToBook(it, i)).filter(Boolean) as Book[];
+        setBooks(mapped);
+      } catch (e: any) {
+        setError(e?.message || "Error cargando libros");
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  const toggle = useCallback((id: string) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpandedId((prev) => (prev === id ? null : id));
-  }, []);
-
-  if (loading) return <View style={styles.center}><ActivityIndicator size="large" /></View>;
-  if (err) return <View style={styles.center}><Text>{err}</Text></View>;
+  if (loading) return <Text style={{ textAlign: "center", marginTop: 12 }}>Cargando…</Text>;
+  if (error)   return <Text style={{ textAlign: "center", marginTop: 12 }}>Error: {error}</Text>;
+  if (!books.length) return <Text style={{ textAlign: "center", marginTop: 12 }}>Sin resultados</Text>;
 
   return (
-    <FlatList
-      data={data}
-      keyExtractor={(item, idx) => item.id || String(idx)}
-      contentContainerStyle={styles.list}
-      renderItem={({ item }) => (
-        <BookCard
-          title={item.title}
-          author={item.author}
-          year={item.year}
-          coverUrl={item.coverUrl}
-          expanded={expandedId === item.id}
-          onPress={() => { console.log("tap", item.id); toggle(item.id); }}
-          onMore={() => toggle(item.id)} // o navegar a detalle si querés
-        />
-      )}
-      ListEmptyComponent={<Text style={{ textAlign: "center" }}>No hay libros</Text>}
-    />
+    <View style={{ paddingHorizontal: 12 }}>
+      <FlatList
+        data={books}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <BookCard book={item} />}
+      />
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  list: { padding: 16 },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 16 },
-});
